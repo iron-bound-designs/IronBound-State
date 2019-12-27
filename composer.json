@@ -1,0 +1,35 @@
+{
+  "name": "ironbound/state",
+  "description": "IronBound State Machine Library",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Timothy Jacobs",
+      "email": "timothy@ironbounddesigns.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "IronBound\\State\\": "src/"
+    },
+    "files": [
+      "src/functions.php",
+      "src/asserts.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "IronBound\\State\\Tests\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "psr/event-dispatcher": "^1.0@dev",
+    "squizlabs/php_codesniffer": "^3.0@dev",
+    "phpunit/phpunit": "^8"
+  },
+  "require": {
+    "myclabs/php-enum": "dev-master",
+    "php": "^7.2"
+  }
+}
