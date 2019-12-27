@@ -1,4 +1,6 @@
 # IronBound State
+[![Build Status](https://travis-ci.com/iron-bound-designs/IronBound-State.svg?branch=master)](https://travis-ci.com/iron-bound-designs/IronBound-State)
+
 IronBound State is a State Machine library heavily influenced by `yohang/finite`.
 
 ## Core Components
