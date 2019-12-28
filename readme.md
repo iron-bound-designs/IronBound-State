@@ -1,5 +1,5 @@
 # IronBound State
-[![Build Status](https://travis-ci.com/iron-bound-designs/IronBound-State.svg?branch=master)](https://travis-ci.com/iron-bound-designs/IronBound-State) [![codecov](https://codecov.io/gh/iron-bound-designs/IronBound-State/branch/master/graph/badge.svg)](https://codecov.io/gh/iron-bound-designs/IronBound-State)
+[![Build Status](https://travis-ci.com/iron-bound-designs/IronBound-State.svg?branch=master)](https://travis-ci.com/iron-bound-designs/IronBound-State) [![codecov](https://codecov.io/gh/iron-bound-designs/IronBound-State/branch/master/graph/badge.svg)](https://codecov.io/gh/iron-bound-designs/IronBound-State) [![Latest Stable Version](https://poser.pugx.org/ironbound/state/v/stable)](https://packagist.org/packages/ironbound/state) [![License](https://poser.pugx.org/ironbound/state/license)](https://packagist.org/packages/ironbound/state)
 
 IronBound State is a State Machine library heavily influenced by `yohang/finite`.
 
