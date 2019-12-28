@@ -200,3 +200,17 @@ $paymentStateMachine = $stateMachineFactory->make(new Order(), new GraphId('paym
 $deliveryStateMachine = $stateMachineFactory->make(new Order(), new GraphId('delivery'));
 $blogPostStateMachine = $stateMachineFactory->make(new BlogPost(), new GraphId('status'));
 ```
+
+## Events
+IronBound-State integrates with the [PSR-14 Event Dispatcher spec](https://www.php-fig.org/psr/psr-14/) to customize behavior and listen for actions. 
+
+You can provide the `ConcreteStateMachine` with an `EventDispatcherInterface` instance by calling `ConcreteStateMachine::setEventDispatcher`. The following events are currently supported.
+
+### [`TestTransitionEvent`](src/Event/TestTransitionEvent.php)
+Called during the evaluation process after determining that the transition is available, and it's guard returned a valid evaluation. Call `TestTransitionEvent::reject($reason)` to dynamically prevent a transition from being applied.
+
+### [`BeforeTransitionEvent`](src/Event/BeforeTransitionEvent.php)
+Called before updating a subject's state in response to a transition being applied.
+
+### [`AfterTransitionEvent`](src/Event/AfterTransitionEvent.php)
+Called after updating a subject's state in response to a transition being applied.

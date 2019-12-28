@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace IronBound\State\Tests;
 
 use IronBound\State\ConcreteStateMachine;
+use IronBound\State\Event\AfterTransitionEvent;
+use IronBound\State\Event\BeforeTransitionEvent;
+use IronBound\State\Event\TestTransitionEvent;
 use IronBound\State\Exception\CannotTransition;
 use IronBound\State\Graph\{Graph, GraphId, ImmutableGraph};
 use IronBound\State\State\{ImmutableState, StateId, StateType};
@@ -22,6 +25,7 @@ use IronBound\State\StateMediator\{PropertyStateMediator, StateMediator};
 use IronBound\State\Transition\{Evaluation, Guard, ImmutableTransition, Transition, TransitionId};
 use PHPUnit\Framework\TestCase;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use function IronBound\State\mapMethod;
 
 class ConcreteStateMachineTest extends TestCase
@@ -147,6 +151,26 @@ class ConcreteStateMachineTest extends TestCase
         $this->assertEquals([ 'Error' ], $evaluation->getReasons());
     }
 
+    public function testEvaluateDispatchesEventAndMarksEvaluationAsInvalidIfRejected(): void
+    {
+        $machine    = new ConcreteStateMachine($this->getMediator(), $this->getGraph(), $this->getSubject());
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (TestTransitionEvent $event) {
+                $event->reject('Error');
+
+                return true;
+            }))
+            ->willReturnArgument(0);
+
+        $machine->setEventDispatcher($dispatcher);
+        $evaluation = $machine->evaluate(self::$activate);
+
+        $this->assertTrue($evaluation->isInvalid());
+        $this->assertEquals([ 'Error' ], $evaluation->getReasons());
+    }
+
     /**
      * @dataProvider dpGetAvailableTransitions
      *
@@ -193,6 +217,23 @@ class ConcreteStateMachineTest extends TestCase
 
         $this->expectException(CannotTransition::class);
         $machine->apply(self::$deactivate);
+    }
+
+    public function testApplyFiresEvents(): void
+    {
+        $machine    = new ConcreteStateMachine($this->getMediator(), $this->getGraph(), $this->getSubject());
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects($this->exactly(3))
+            ->method('dispatch')
+            ->withConsecutive(
+                [ $this->isInstanceOf(TestTransitionEvent::class) ],
+                [ $this->isInstanceOf(BeforeTransitionEvent::class) ],
+                [ $this->isInstanceOf(AfterTransitionEvent::class) ],
+            )
+            ->willReturnArgument(0);
+
+        $machine->setEventDispatcher($dispatcher);
+        $machine->apply(self::$activate);
     }
 
     protected function getGraph(): Graph

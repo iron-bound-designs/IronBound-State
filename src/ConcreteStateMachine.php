@@ -13,12 +13,16 @@ declare(strict_types=1);
 
 namespace IronBound\State;
 
+use IronBound\State\Event\AfterTransitionEvent;
+use IronBound\State\Event\BeforeTransitionEvent;
+use IronBound\State\Event\TestTransitionEvent;
 use IronBound\State\Exception\CannotTransition;
 use IronBound\State\Graph\Graph;
 use IronBound\State\State\State;
 use IronBound\State\Transition\{Evaluation, TransitionId};
 use IronBound\State\State\StateType;
 use IronBound\State\StateMediator\StateMediator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class ConcreteStateMachine implements StateMachine
 {
@@ -30,6 +34,9 @@ final class ConcreteStateMachine implements StateMachine
 
     /** @var object */
     private $subject;
+
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
 
     /**
      * ConcreteStateMachine constructor.
@@ -43,6 +50,16 @@ final class ConcreteStateMachine implements StateMachine
         $this->mediator = $mediator;
         $this->graph    = $graph;
         $this->subject  = $subject;
+    }
+
+    /**
+     * Set the Event Dispatcher for the State Machine to dispatch events through.
+     *
+     * @param EventDispatcherInterface $eventDispatcher
+     */
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function getSubject(): object
@@ -75,7 +92,16 @@ final class ConcreteStateMachine implements StateMachine
         }
 
         $transition = $this->getGraph()->getTransitions()->get($transitionId);
+
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(new BeforeTransitionEvent($this, $transition));
+        }
+
         $this->mediator->setState($this->getSubject(), $transition->getFinalState());
+
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(new AfterTransitionEvent($this, $transition));
+        }
     }
 
     public function evaluate(TransitionId $transitionId): Evaluation
@@ -97,7 +123,19 @@ final class ConcreteStateMachine implements StateMachine
         }
 
         if ($guard = $transition->getGuard()) {
-            return $guard($this, $transition);
+            $evaluation = $guard($this, $transition);
+
+            if ($evaluation->isInvalid()) {
+                return $evaluation;
+            }
+        }
+
+        if ($this->eventDispatcher) {
+            $event = $this->eventDispatcher->dispatch(new TestTransitionEvent($this, $transition));
+
+            if ($reasons = $event->getRejectionReasons()) {
+                return Evaluation::invalid(...$reasons);
+            }
         }
 
         return Evaluation::valid();
