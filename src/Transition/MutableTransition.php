@@ -26,17 +26,22 @@ final class MutableTransition implements Transition
     /** @var StateId */
     private $finalState;
 
+    /** @var Guard|null */
+    private $guard;
+
     /**
      * MutableTransition constructor.
      *
      * @param TransitionId $id
      * @param StateId[]    $initialStates
      * @param StateId      $finalState
+     * @param Guard|null   $guard
      */
-    public function __construct(TransitionId $id, iterable $initialStates, StateId $finalState)
+    public function __construct(TransitionId $id, iterable $initialStates, StateId $finalState, Guard $guard = null)
     {
         $this->id         = $id;
         $this->finalState = $finalState;
+        $this->guard      = $guard;
 
         \IronBound\State\each($initialStates, [ $this, 'addInitialState' ]);
     }
@@ -87,5 +92,10 @@ final class MutableTransition implements Transition
     public function getFinalState(): StateId
     {
         return $this->finalState;
+    }
+
+    public function getGuard(): ?Guard
+    {
+        return $this->guard;
     }
 }

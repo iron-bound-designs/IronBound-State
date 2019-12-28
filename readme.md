@@ -84,9 +84,11 @@ $factory->make($subject, new GraphId('status'));
 The recommended way to do this is to use the `StateMachineFactoryConfigurator` class to do the heavy lifting based on a configuration array.
 
 ```php
+use IronBound\State\Factory\StateMachineFactoryConfigurator;
 use IronBound\State\Graph\GraphId;
 use IronBound\State\State\StateType;
-use IronBound\State\Factory\StateMachineFactoryConfigurator;
+use IronBound\State\StateMachine;
+use IronBound\State\Transition\Evaluation;
 
 $config = [
     [
@@ -132,6 +134,14 @@ $config = [
                     'refund'   => [
                         'from' => [ 'processing', 'paid' ],
                         'to'   => 'refunded',
+                        // Use a guard to add constraints to when a transition is available. 
+                        'guard' => static function(StateMachine $machine) {
+                            if ($machine->getSubject()->createdAt + WEEK_IN_SECONDS < time()) {
+                                return Evaluation::invalid('The refund window has expired.');
+                            }
+                            
+                            return Evaluation::valid();
+                        }
                     ],
                 ],
             ],

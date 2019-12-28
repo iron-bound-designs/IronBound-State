@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Tests\Transition;
 
 use IronBound\State\State\StateId;
-use IronBound\State\Transition\{MutableTransition, TransitionId};
+use IronBound\State\Transition\{Guard, MutableTransition, TransitionId};
 use PHPUnit\Framework\TestCase;
 
 use function IronBound\State\mapMethod;
@@ -66,6 +66,19 @@ class MutableTransitionTest extends TestCase
 
         $this->assertCount(1, $initialStates);
         $this->assertEquals('pending', $initialStates[0]->getName());
+    }
+
+    public function testGetGuard(): void
+    {
+        $guard      = $this->createMock(Guard::class);
+        $transition = new MutableTransition(
+            new TransitionId('activate'),
+            [ new StateId('pending') ],
+            new StateId('active'),
+            $guard
+        );
+
+        $this->assertSame($guard, $transition->getGuard());
     }
 
     private function makeTransition(): MutableTransition

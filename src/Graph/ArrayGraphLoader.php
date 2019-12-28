@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Graph;
 
 use IronBound\State\State\{MutableState, StateId, StateType};
-use IronBound\State\Transition\{ImmutableTransition, TransitionId};
+use IronBound\State\Transition\{CallableGuard, Guard, ImmutableTransition, TransitionId};
 
 use function IronBound\State\map;
 
@@ -64,12 +64,19 @@ final class ArrayGraphLoader implements GraphLoader
         }
 
         foreach ($this->config['transitions'] as $name => $config) {
+            $guard = $config['guard'] ?? null;
+
+            if ($guard && ! $guard instanceof Guard) {
+                $guard = new CallableGuard($guard);
+            }
+
             $transition = new ImmutableTransition(
                 new TransitionId($name),
-                map((array) $config['from'], function ($name) {
+                map((array) $config['from'], static function ($name) {
                     return new StateId($name);
                 }),
-                new StateId($config['to'])
+                new StateId($config['to']),
+                $guard
             );
 
             $mutable->addTransition($transition);

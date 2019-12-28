@@ -17,8 +17,9 @@ use IronBound\State\ConcreteStateMachine;
 use IronBound\State\Exception\CannotTransition;
 use IronBound\State\Graph\{Graph, GraphId, ImmutableGraph};
 use IronBound\State\State\{ImmutableState, StateId, StateType};
+use IronBound\State\StateMachine;
 use IronBound\State\StateMediator\{PropertyStateMediator, StateMediator};
-use IronBound\State\Transition\{ImmutableTransition, TransitionId};
+use IronBound\State\Transition\{Evaluation, Guard, ImmutableTransition, Transition, TransitionId};
 use PHPUnit\Framework\TestCase;
 
 use function IronBound\State\mapMethod;
@@ -91,8 +92,6 @@ class ConcreteStateMachineTest extends TestCase
 
         $evaluation = $machine->evaluate($transitionId);
         $this->assertEquals($expectedIsValid, $evaluation->isValid());
-        $this->assertSame($machine->getSubject(), $evaluation->getSubject());
-        $this->assertEquals($transitionId, $evaluation->getTransition()->getId());
 
         if ($evaluation->isInvalid()) {
             $this->assertGreaterThanOrEqual(1, count($evaluation->getReasons()));
@@ -114,6 +113,38 @@ class ConcreteStateMachineTest extends TestCase
             [ true, self::$deactivate, self::$active ],
             [ false, self::$deactivate, self::$inactive ],
         ];
+    }
+
+    public function testEvaluateCallsGuard(): void
+    {
+        $guard = $this->createMock(Guard::class);
+        $guard->expects($this->once())
+            ->method('__invoke')
+            ->with(
+                $this->callback(static function (StateMachine $actual) use (&$machine) {
+                    return $actual === $machine;
+                }),
+                $this->callback(static function (Transition $actual) use (&$transition) {
+                    return $actual === $transition;
+                })
+            )
+            ->willReturn(Evaluation::invalid('Error'));
+
+        $graph   = new ImmutableGraph(
+            self::$graphId,
+            [
+                new ImmutableState(self::$pending, StateType::INITIAL(), [ self::$activate ]),
+                new ImmutableState(self::$active, StateType::NORMAL(), [ self::$deactivate ]),
+            ],
+            [
+                $transition = new ImmutableTransition(self::$activate, [ self::$pending ], self::$active, $guard),
+            ]
+        );
+        $machine = new ConcreteStateMachine($this->getMediator(), $graph, $this->getSubject());
+
+        $evaluation = $machine->evaluate(self::$activate);
+        $this->assertTrue($evaluation->isInvalid());
+        $this->assertEquals([ 'Error' ], $evaluation->getReasons());
     }
 
     /**

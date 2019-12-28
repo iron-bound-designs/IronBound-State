@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Exception;
 
 use IronBound\State\Transition\Evaluation;
+use IronBound\State\Transition\TransitionId;
 use Throwable;
 
 final class CannotTransition extends \RuntimeException implements Exception
@@ -21,19 +22,29 @@ final class CannotTransition extends \RuntimeException implements Exception
     /** @var Evaluation */
     private $evaluation;
 
-    public function __construct(Evaluation $evaluation, $message = "", $code = 0, Throwable $previous = null)
-    {
+    /** @var TransitionId */
+    private $transitionId;
+
+    public function __construct(
+        Evaluation $evaluation,
+        TransitionId $transitionId,
+        $message = '',
+        $code = 0,
+        Throwable $previous = null
+    ) {
         parent::__construct($message, $code, $previous);
-        $this->evaluation = $evaluation;
+        $this->evaluation   = $evaluation;
+        $this->transitionId = $transitionId;
     }
 
-    public static function create(Evaluation $evaluation): self
+    public static function create(Evaluation $evaluation, TransitionId $transitionId): self
     {
         return new self(
             $evaluation,
+            $transitionId,
             sprintf(
                 'Cannot apply the %s transition: %s',
-                $evaluation->getTransition()->getId(),
+                $transitionId,
                 implode(', ', $evaluation->getReasons())
             )
         );
@@ -47,5 +58,15 @@ final class CannotTransition extends \RuntimeException implements Exception
     public function getEvaluation(): Evaluation
     {
         return $this->evaluation;
+    }
+
+    /**
+     * Get the transition that tried to be applied.
+     *
+     * @return TransitionId
+     */
+    public function getTransitionId(): TransitionId
+    {
+        return $this->transitionId;
     }
 }

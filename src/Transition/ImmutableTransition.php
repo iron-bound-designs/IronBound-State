@@ -28,17 +28,22 @@ final class ImmutableTransition implements Transition
     /** @var StateId */
     private $finalState;
 
+    /** @var Guard|null */
+    private $guard;
+
     /**
      * ImmutableTransition constructor.
      *
      * @param TransitionId $id
      * @param StateId[]    $initialStates
      * @param StateId      $finalState
+     * @param Guard|null   $guard
      */
-    public function __construct(TransitionId $id, iterable $initialStates, StateId $finalState)
+    public function __construct(TransitionId $id, iterable $initialStates, StateId $finalState, Guard $guard = null)
     {
         $this->id            = $id;
         $this->finalState    = $finalState;
+        $this->guard         = $guard;
         $this->initialStates = uniqueBy($initialStates, static function (StateId $id) {
             return $id->getName();
         });
@@ -60,5 +65,10 @@ final class ImmutableTransition implements Transition
     public function getFinalState(): StateId
     {
         return $this->finalState;
+    }
+
+    public function getGuard(): ?Guard
+    {
+        return $this->guard;
     }
 }

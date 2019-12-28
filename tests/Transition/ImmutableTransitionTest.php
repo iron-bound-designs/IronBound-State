@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Tests\Transition;
 
 use IronBound\State\State\StateId;
-use IronBound\State\Transition\{ImmutableTransition, TransitionId};
+use IronBound\State\Transition\{Guard, ImmutableTransition, TransitionId};
 use PHPUnit\Framework\TestCase;
 
 class ImmutableTransitionTest extends TestCase
@@ -39,6 +39,19 @@ class ImmutableTransitionTest extends TestCase
         $transition = $this->makeTransition();
 
         $this->assertEquals('active', $transition->getFinalState()->getName());
+    }
+
+    public function testGetGuard(): void
+    {
+        $guard      = $this->createMock(Guard::class);
+        $transition = new ImmutableTransition(
+            new TransitionId('activate'),
+            [ new StateId('pending') ],
+            new StateId('active'),
+            $guard
+        );
+
+        $this->assertSame($guard, $transition->getGuard());
     }
 
     private function makeTransition(): ImmutableTransition

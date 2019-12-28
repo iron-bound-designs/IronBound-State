@@ -37,4 +37,14 @@ interface Transition
      * @return StateId
      */
     public function getFinalState(): StateId;
+
+    /**
+     * Get the Guard for a transition.
+     *
+     * This will be called when evaluating the transition to determine
+     * if the subject meets all the requirements.
+     *
+     * @return Guard|null
+     */
+    public function getGuard(): ?Guard;
 }

@@ -71,7 +71,7 @@ final class ConcreteStateMachine implements StateMachine
         $evaluation = $this->evaluate($transitionId);
 
         if (! $evaluation->isValid()) {
-            throw CannotTransition::create($evaluation);
+            throw CannotTransition::create($evaluation, $transitionId);
         }
 
         $transition = $this->getGraph()->getTransitions()->get($transitionId);
@@ -89,8 +89,6 @@ final class ConcreteStateMachine implements StateMachine
 
         if (! $found) {
             return Evaluation::invalid(
-                $this->getSubject(),
-                $transition,
                 sprintf(
                     '%s is not in the list of available transitions.',
                     $transition->getId()
@@ -98,10 +96,11 @@ final class ConcreteStateMachine implements StateMachine
             );
         }
 
-        return Evaluation::valid(
-            $this->getSubject(),
-            $transition
-        );
+        if ($guard = $transition->getGuard()) {
+            return $guard($this, $transition);
+        }
+
+        return Evaluation::valid();
     }
 
     public function getAvailableTransitions(): iterable

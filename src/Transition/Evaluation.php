@@ -15,12 +15,6 @@ namespace IronBound\State\Transition;
 
 final class Evaluation
 {
-    /** @var object */
-    private $subject;
-
-    /** @var Transition */
-    private $transition;
-
     /** @var bool */
     private $valid;
 
@@ -30,64 +24,35 @@ final class Evaluation
     /**
      * Evaluation constructor.
      *
-     * @param object     $subject
-     * @param Transition $transition
-     * @param bool       $valid
-     * @param string[]   $reasons
+     * @param bool     $valid
+     * @param string[] $reasons
      */
-    private function __construct(object $subject, Transition $transition, bool $valid, array $reasons)
+    private function __construct(bool $valid, array $reasons)
     {
-        $this->subject    = $subject;
-        $this->transition = $transition;
-        $this->valid      = $valid;
-        $this->reasons    = $reasons;
+        $this->valid   = $valid;
+        $this->reasons = $reasons;
     }
 
     /**
      * Make a valid Evaluation result.
      *
-     * @param object     $subject
-     * @param Transition $transition
-     *
      * @return Evaluation
      */
-    public static function valid(object $subject, Transition $transition): Evaluation
+    public static function valid(): Evaluation
     {
-        return new static($subject, $transition, true, []);
+        return new static(true, []);
     }
 
     /**
      * Make an invalid Evaluation result.
      *
-     * @param object     $subject
-     * @param Transition $transition
-     * @param string     ...$reasons
+     * @param string ...$reasons
      *
      * @return Evaluation
      */
-    public static function invalid(object $subject, Transition $transition, string ...$reasons): Evaluation
+    public static function invalid(string ...$reasons): Evaluation
     {
-        return new static($subject, $transition, false, $reasons);
-    }
-
-    /**
-     * Get the subject the transition is being evaluated for.
-     *
-     * @return object
-     */
-    public function getSubject(): object
-    {
-        return $this->subject;
-    }
-
-    /**
-     * Get the transition being evaluated.
-     *
-     * @return Transition
-     */
-    public function getTransition(): Transition
-    {
-        return $this->transition;
+        return new static(false, $reasons);
     }
 
     /**
