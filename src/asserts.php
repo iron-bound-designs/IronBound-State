@@ -21,7 +21,7 @@ use IronBound\State\Exception\{IsolatedState, UnknownState};
 use IronBound\State\Graph\Graph;
 
 /**
- * Assets that a graph is correctly constructed.
+ * Asserts that a graph is correctly constructed.
  *
  * Each state must be referenced by at least one transition,
  * and each transition must only reference defined states.
