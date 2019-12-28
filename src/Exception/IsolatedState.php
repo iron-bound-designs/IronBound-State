@@ -21,7 +21,7 @@ final class IsolatedState extends \LogicException implements Exception
     public static function create(StateId $stateId): self
     {
         return new self(sprintf(
-            'The %s state is not referenced by any transitions.',
+            "The '%s' state is not referenced by any transitions.",
             $stateId
         ));
     }

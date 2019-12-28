@@ -16,6 +16,7 @@ namespace IronBound\State\Graph;
 use IronBound\State\State\{MutableState, StateId, StateType};
 use IronBound\State\Transition\{CallableGuard, Guard, ImmutableTransition, TransitionId};
 
+use function IronBound\State\assertValidGraph;
 use function IronBound\State\map;
 
 final class ArrayGraphLoader implements GraphLoader
@@ -81,6 +82,8 @@ final class ArrayGraphLoader implements GraphLoader
 
             $mutable->addTransition($transition);
         }
+
+        assertValidGraph($mutable);
 
         return $mutable->toImmutable();
     }

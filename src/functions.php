@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace IronBound\State;
 
+use IronBound\State\Exception\InitialStateRequired;
 use IronBound\State\Exception\UnknownState;
 use IronBound\State\Graph\Graph;
 use IronBound\State\State\State;
@@ -56,16 +57,18 @@ function containsStateId(StateId $needle, StateId ...$haystack): bool
  * @param Graph $graph
  *
  * @return State
+ *
+ * @throws InitialStateRequired If no initial state exists.
  */
 function getInitialState(Graph $graph): State
 {
-    foreach ($graph->getStates()->getIterator() as $state) {
+    foreach ($graph->getStates() as $state) {
         if ($state->getType()->equals(StateType::INITIAL())) {
             return $state;
         }
     }
 
-    throw new UnknownState(sprintf(
+    throw new InitialStateRequired(sprintf(
         'The %s graph does not have an initial state.',
         $graph->getId()
     ));

@@ -40,6 +40,11 @@ trait StateSetTrait
         return $this->storage[ $id->getName() ];
     }
 
+    /**
+     * Get an iterator to traverse the set.
+     *
+     * @return \Traversable|State[]
+     */
     public function getIterator()
     {
         return new \ArrayIterator(array_values($this->storage));

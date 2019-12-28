@@ -13,11 +13,9 @@ declare(strict_types=1);
 
 namespace IronBound\State;
 
-use IronBound\State\Ds\MutableStateSet;
-use IronBound\State\Ds\MutableTransitionSet;
-use IronBound\State\State\State;
-use IronBound\State\State\StateType;
-use IronBound\State\Exception\{IsolatedState, UnknownState};
+use IronBound\State\Ds\{MutableStateSet, MutableTransitionSet};
+use IronBound\State\State\{State, StateType};
+use IronBound\State\Exception\{InitialStateRequired, IsolatedState, UnknownState};
 use IronBound\State\Graph\Graph;
 
 /**
@@ -28,6 +26,7 @@ use IronBound\State\Graph\Graph;
  *
  * @param Graph $graph
  *
+ * @throws InitialStateRequired If incorrect initial states.
  * @throws UnknownState If a transition references an unknown state.
  * @throws IsolatedState If a state is not referenced by any transitions.
  */
@@ -38,51 +37,51 @@ function assertValidGraph(Graph $graph): void
     });
 
     if (count($initial) === 0) {
-        throw new UnknownState(sprintf(
+        throw new InitialStateRequired(sprintf(
             'The %s graph does not have an initial state.',
             $graph->getId()
         ));
     }
 
     if (count($initial) > 1) {
-        throw new UnknownState(sprintf(
+        throw new InitialStateRequired(sprintf(
             'The %s graph has %d initial states. Only 1 initial state is allowed.',
             $graph->getId(),
-            $initial
+            count($initial)
         ));
     }
 
-    $states      = new Ds\MutableStateSet($graph->getStates());
+    $states      = new MutableStateSet($graph->getStates());
     $transitions = new MutableTransitionSet($graph->getTransitions());
 
-    $seen = new MutableStateSet();
+    $seen = [];
 
     foreach ($transitions as $transition) {
-        foreach ($transition->getInitialStates() as $state) {
-            if (! $states->contains($state)) {
+        foreach ($transition->getInitialStates() as $stateId) {
+            if (! $states->contains($stateId)) {
                 throw new UnknownState(sprintf(
-                    'The %s transition referenced an unknown initial state %s.',
+                    "The %s transition references an unknown initial state '%s'.",
                     $transition->getId(),
-                    $state
+                    $stateId
                 ));
             }
 
-            $seen->addState($state);
+            $seen[ $stateId->getName() ] = true;
         }
 
         if (! $states->contains($transition->getFinalState())) {
             throw new UnknownState(sprintf(
-                'The %s transition referenced an unknown final state %s.',
+                "The %s transition references an unknown final state '%s'.",
                 $transition->getId(),
                 $transition->getFinalState()
             ));
         }
 
-        $seen->addState($states->get($transition->getFinalState()));
+        $seen[ $transition->getFinalState()->getName() ] = true;
     }
 
     foreach ($states as $state) {
-        if (! $seen->contains($state)) {
+        if (! isset($seen[ $state->getId()->getName() ])) {
             throw IsolatedState::create($state->getId());
         }
     }
