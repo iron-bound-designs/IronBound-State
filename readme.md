@@ -3,6 +3,29 @@
 
 IronBound State is a State Machine library heavily influenced by `yohang/finite`.
 
+## Usage
+```php
+use IronBound\State\Factory\StateMachineFactory;
+use IronBound\State\Graph\GraphId;
+use IronBound\State\Transition\TransitionId;
+
+/** @var StateMachineFactory $stateMachineFactory */
+$subject = new Order();
+$machine = $stateMachineFactory->make($subject, new GraphId('payment'));
+$state   = $machine->getCurrentState(); // State object for "unpaid"
+
+$machine->apply(new TransitionId('pay'));
+echo $subject->paymentStatus; // processing
+
+foreach ($machine->getAvailableTransitions() as $transition) {
+    echo $transition->getId();
+}
+
+if ($machine->evaluate(new TransitionId('refund'))->isValid()) {
+    // do refund.
+}
+```
+
 ## Core Components
 ### Subject
 The subject is the object that maintains state and has transitions applied to it. The only requirement is that it is a PHP object; there is no `interface` defined for subjects. 
