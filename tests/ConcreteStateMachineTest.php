@@ -228,7 +228,7 @@ class ConcreteStateMachineTest extends TestCase
             ->withConsecutive(
                 [ $this->isInstanceOf(TestTransitionEvent::class) ],
                 [ $this->isInstanceOf(BeforeTransitionEvent::class) ],
-                [ $this->isInstanceOf(AfterTransitionEvent::class) ],
+                [ $this->isInstanceOf(AfterTransitionEvent::class) ]
             )
             ->willReturnArgument(0);
 
