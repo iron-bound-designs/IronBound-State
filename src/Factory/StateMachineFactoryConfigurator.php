@@ -14,7 +14,12 @@ declare(strict_types=1);
 namespace IronBound\State\Factory;
 
 use IronBound\State\Graph\{ArrayGraphLoader, CachedGraphLoader, ChainGraphLoader, GraphId};
-use IronBound\State\StateMediator\{PredefinedStateMediatorFactory, PropertyStateMediator};
+use IronBound\State\Exception\InvalidArgumentException;
+use IronBound\State\StateMediator\{MethodStateMediator,
+    PredefinedStateMediatorFactory,
+    PropertyStateMediator,
+    StateMediator
+};
 
 use function IronBound\State\arrayPick;
 
@@ -36,11 +41,33 @@ final class StateMachineFactoryConfigurator
         foreach ($subjects as $subject) {
             $mediatorFactory = new PredefinedStateMediatorFactory();
             $graphLoader     = new ChainGraphLoader();
-            $test            = ConcreteStateMachineFactory::classTest($subject['test']['class']);
+
+            if ($subject instanceof SupportsTest) {
+                $test = $subject;
+            } elseif (isset($subject['test']['class'])) {
+                $test = ConcreteStateMachineFactory::classTest($subject['test']['class']);
+            } else {
+                throw new InvalidArgumentException('Config is missing a valid support test.');
+            }
 
             foreach ($subject['graphs'] as $graphName => $graphConfig) {
-                $graphId  = new GraphId($graphName);
-                $mediator = new PropertyStateMediator($graphConfig['mediator']['property']);
+                $graphId = new GraphId($graphName);
+
+                if ($graphConfig['mediator'] instanceof StateMediator) {
+                    $mediator = $graphConfig['mediator'];
+                } elseif (isset($graphConfig['mediator']['property'])) {
+                    $mediator = new PropertyStateMediator($graphConfig['mediator']['property']);
+                } elseif (isset($graphConfig['mediator']['method'])) {
+                    $mediator = new MethodStateMediator(
+                        $graphConfig['mediator']['method']['get'],
+                        $graphConfig['mediator']['method']['set']
+                    );
+                } else {
+                    throw new InvalidArgumentException(
+                        sprintf('Config is missing a mediator for the %s graph.', $graphName)
+                    );
+                }
+
                 $mediatorFactory->addMediator($graphId, $mediator);
 
                 $graphLoader->addLoader(new ArrayGraphLoader(

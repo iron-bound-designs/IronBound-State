@@ -106,4 +106,58 @@ class StateMachineFactoryConfiguratorTest extends TestCase
 
         $this->assertEquals('pending', $stateMachine->getCurrentState()->getId());
     }
+
+    public function testConfigureMethodMediator(): void
+    {
+        $subject = new class {
+            private $status;
+
+            public function get()
+            {
+                return $this->status;
+            }
+
+            public function set($status)
+            {
+                $this->status = $status;
+            }
+        };
+
+        $configurator = new StateMachineFactoryConfigurator();
+        $factory      = $configurator->configure([
+            [
+                'test'   => [
+                    'class' => get_class($subject),
+                ],
+                'graphs' => [
+                    'status' => [
+                        'mediator'    => [
+                            'method' => [
+                                'get' => 'get',
+                                'set' => 'set',
+                            ],
+                        ],
+                        'states'      => [
+                            'pending' => [
+                                'type' => StateType::INITIAL,
+                            ],
+                            'active'  => [],
+                        ],
+                        'transitions' => [
+                            'activate' => [
+                                'from' => 'pending',
+                                'to'   => 'active',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $stateMachine = $factory->make($subject, new GraphId('status'));
+
+        $this->assertEquals('pending', $stateMachine->getCurrentState()->getId());
+        $stateMachine->apply(new TransitionId('activate'));
+        $this->assertEquals('active', $stateMachine->getCurrentState()->getId());
+    }
 }
