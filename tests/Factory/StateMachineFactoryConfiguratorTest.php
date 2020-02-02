@@ -13,9 +13,12 @@ declare(strict_types=1);
 
 namespace IronBound\State\Tests\Factory;
 
+use IronBound\State\Exception\InvalidArgumentException;
+use IronBound\State\Factory\ConcreteStateMachineFactory;
 use IronBound\State\Factory\StateMachineFactoryConfigurator;
 use IronBound\State\Graph\GraphId;
 use IronBound\State\State\StateType;
+use IronBound\State\StateMediator\PropertyStateMediator;
 use IronBound\State\Transition\TransitionId;
 use PHPUnit\Framework\TestCase;
 
@@ -159,5 +162,137 @@ class StateMachineFactoryConfiguratorTest extends TestCase
         $this->assertEquals('pending', $stateMachine->getCurrentState()->getId());
         $stateMachine->apply(new TransitionId('activate'));
         $this->assertEquals('active', $stateMachine->getCurrentState()->getId());
+    }
+
+    public function testConfigureTestInstance(): void
+    {
+        $configurator = new StateMachineFactoryConfigurator();
+        $factory      = $configurator->configure([
+            [
+                'test'   => ConcreteStateMachineFactory::classTest('stdClass'),
+                'graphs' => [
+                    'status' => [
+                        'mediator'    => [
+                            'property' => 'status',
+                        ],
+                        'states'      => [
+                            'pending' => [
+                                'type' => StateType::INITIAL,
+                            ],
+                            'active'  => [],
+                        ],
+                        'transitions' => [
+                            'activate' => [
+                                'from' => 'pending',
+                                'to'   => 'active',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $subject      = new \stdClass();
+        $stateMachine = $factory->make($subject, new GraphId('status'));
+
+        $this->assertEquals('pending', $stateMachine->getCurrentState()->getId());
+    }
+
+    public function testConfigureMediatorInstance(): void
+    {
+        $configurator = new StateMachineFactoryConfigurator();
+        $factory      = $configurator->configure([
+            [
+                'test'   => [
+                    'class' => 'stdClass',
+                ],
+                'graphs' => [
+                    'status' => [
+                        'mediator'    => new PropertyStateMediator('status'),
+                        'states'      => [
+                            'pending' => [
+                                'type' => StateType::INITIAL,
+                            ],
+                            'active'  => [],
+                        ],
+                        'transitions' => [
+                            'activate' => [
+                                'from' => 'pending',
+                                'to'   => 'active',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $subject      = new \stdClass();
+        $stateMachine = $factory->make($subject, new GraphId('status'));
+
+        $this->assertEquals('pending', $stateMachine->getCurrentState()->getId());
+    }
+
+    public function testConfigureThrowsExceptionIfMissingMediator(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('mediator');
+
+        $configurator = new StateMachineFactoryConfigurator();
+        $configurator->configure([
+            [
+                'test'   => [
+                    'class' => 'stdClass',
+                ],
+                'graphs' => [
+                    'status' => [
+                        'mediator'    => [],
+                        'states'      => [
+                            'pending' => [
+                                'type' => StateType::INITIAL,
+                            ],
+                            'active'  => [],
+                        ],
+                        'transitions' => [
+                            'activate' => [
+                                'from' => 'pending',
+                                'to'   => 'active',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigureThrowsExceptionIfMissingTest(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('support');
+
+        $configurator = new StateMachineFactoryConfigurator();
+        $configurator->configure([
+            [
+                'test'   => [],
+                'graphs' => [
+                    'status' => [
+                        'mediator'    => [
+                            'property' => 'status',
+                        ],
+                        'states'      => [
+                            'pending' => [
+                                'type' => StateType::INITIAL,
+                            ],
+                            'active'  => [],
+                        ],
+                        'transitions' => [
+                            'activate' => [
+                                'from' => 'pending',
+                                'to'   => 'active',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 }

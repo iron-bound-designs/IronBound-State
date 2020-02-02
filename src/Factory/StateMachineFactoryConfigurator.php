@@ -42,8 +42,8 @@ final class StateMachineFactoryConfigurator
             $mediatorFactory = new PredefinedStateMediatorFactory();
             $graphLoader     = new ChainGraphLoader();
 
-            if ($subject instanceof SupportsTest) {
-                $test = $subject;
+            if ($subject['test'] instanceof SupportsTest) {
+                $test = $subject['test'];
             } elseif (isset($subject['test']['class'])) {
                 $test = ConcreteStateMachineFactory::classTest($subject['test']['class']);
             } else {
