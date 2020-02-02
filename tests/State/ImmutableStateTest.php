@@ -19,6 +19,8 @@ use IronBound\State\State\StateId;
 use IronBound\State\State\StateType;
 use IronBound\State\Transition\TransitionId;
 use PHPUnit\Framework\TestCase;
+use function IronBound\State\getAttribute;
+use function IronBound\State\hasAttribute;
 
 class ImmutableStateTest extends TestCase
 {
@@ -49,6 +51,13 @@ class ImmutableStateTest extends TestCase
         new ImmutableState(new StateId('test'), StateType::FINAL(), [ new TransitionId('transition') ]);
     }
 
+    public function testGetAttributes(): void
+    {
+        $state = $this->makeState();
+        $this->assertTrue(hasAttribute($state, 'label'));
+        $this->assertEquals('Pending', getAttribute($state, 'label'));
+    }
+
     private function makeState(): ImmutableState
     {
         return new ImmutableState(
@@ -56,7 +65,8 @@ class ImmutableStateTest extends TestCase
             StateType::INITIAL(),
             [
                 new TransitionId('activate'),
-            ]
+            ],
+            [ 'label' => 'Pending' ]
         );
     }
 }

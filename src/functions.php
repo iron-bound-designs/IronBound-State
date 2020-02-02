@@ -73,3 +73,44 @@ function getInitialState(Graph $graph): State
         $graph->getId()
     ));
 }
+
+/**
+ * Get an attribute from an AttributeAware object.
+ *
+ * @param AttributeAware $object    The object to pull the attribute from.
+ * @param string         $attribute The attribute name.
+ * @param mixed          $default   The default value.
+ *
+ * @return mixed
+ */
+function getAttribute(AttributeAware $object, string $attribute, $default = null)
+{
+    $attributes = $object->getAttributes();
+
+    foreach ($attributes as $maybeAttribute => $value) {
+        if ($maybeAttribute === $attribute) {
+            return $value;
+        }
+    }
+
+    return $default;
+}
+
+/**
+ * Check if an AttributeAware object has an attribute.
+ *
+ * @param AttributeAware $object    The object to check the attribute for.
+ * @param string         $attribute The attribute name.
+ *
+ * @return bool
+ */
+function hasAttribute(AttributeAware $object, string $attribute): bool
+{
+    foreach ($object->getAttributes() as $maybeAttribute => $value) {
+        if ($maybeAttribute === $attribute) {
+            return true;
+        }
+    }
+
+    return false;
+}

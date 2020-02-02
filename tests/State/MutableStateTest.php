@@ -20,6 +20,8 @@ use IronBound\State\State\StateType;
 use IronBound\State\Transition\TransitionId;
 use PHPUnit\Framework\TestCase;
 
+use function IronBound\State\getAttribute;
+use function IronBound\State\hasAttribute;
 use function IronBound\State\mapMethod;
 
 class MutableStateTest extends TestCase
@@ -81,6 +83,22 @@ class MutableStateTest extends TestCase
             mapMethod($state->getTransitions(), 'getName'),
             mapMethod($immutable->getTransitions(), 'getName')
         );
+        $this->assertEquals($state->getAttributes(), $immutable->getAttributes());
+    }
+
+    public function testGetAttributes(): void
+    {
+        $state = $this->makeState();
+        $this->assertTrue(hasAttribute($state, 'label'));
+        $this->assertEquals('Pending', getAttribute($state, 'label'));
+    }
+
+    public function testSetAttribute(): void
+    {
+        $state = $this->makeState();
+        $state->setAttribute('description', 'The object is pending.');
+        $this->assertTrue(hasAttribute($state, 'description'));
+        $this->assertEquals('The object is pending.', getAttribute($state, 'description'));
     }
 
     private function makeState(): MutableState
@@ -90,7 +108,8 @@ class MutableStateTest extends TestCase
             StateType::INITIAL(),
             [
                 new TransitionId('activate'),
-            ]
+            ],
+            [ 'label' => 'Pending' ]
         );
     }
 }

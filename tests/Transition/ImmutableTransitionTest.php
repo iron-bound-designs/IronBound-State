@@ -16,6 +16,8 @@ namespace IronBound\State\Tests\Transition;
 use IronBound\State\State\StateId;
 use IronBound\State\Transition\{Guard, ImmutableTransition, TransitionId};
 use PHPUnit\Framework\TestCase;
+use function IronBound\State\getAttribute;
+use function IronBound\State\hasAttribute;
 
 class ImmutableTransitionTest extends TestCase
 {
@@ -54,6 +56,13 @@ class ImmutableTransitionTest extends TestCase
         $this->assertSame($guard, $transition->getGuard());
     }
 
+    public function testGetAttributes(): void
+    {
+        $transition = $this->makeTransition();
+        $this->assertTrue(hasAttribute($transition, 'label'));
+        $this->assertEquals('Activate', getAttribute($transition, 'label'));
+    }
+
     private function makeTransition(): ImmutableTransition
     {
         return new ImmutableTransition(
@@ -61,7 +70,9 @@ class ImmutableTransitionTest extends TestCase
             [
                 new StateId('pending'),
             ],
-            new StateId('active')
+            new StateId('active'),
+            null,
+            [ 'label' => 'Activate' ]
         );
     }
 }

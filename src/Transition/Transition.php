@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace IronBound\State\Transition;
 
+use IronBound\State\AttributeAware;
 use IronBound\State\State\StateId;
 
-interface Transition
+interface Transition extends AttributeAware
 {
     /**
      * Get the transition's id.

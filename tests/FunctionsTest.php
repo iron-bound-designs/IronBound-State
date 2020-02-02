@@ -16,10 +16,11 @@ namespace IronBound\State\Tests;
 use IronBound\State\Graph\{GraphId, ImmutableGraph};
 use IronBound\State\State\{ImmutableState, StateId, StateType};
 use IronBound\State\Transition\{ImmutableTransition, TransitionId};
+use IronBound\State\AttributeAware;
 use IronBound\State\Exception\InitialStateRequired;
 use PHPUnit\Framework\TestCase;
 
-use function IronBound\State\{containsStateId, containsTransitionId, getInitialState};
+use function IronBound\State\{containsStateId, containsTransitionId, getAttribute, getInitialState, hasAttribute};
 
 class FunctionsTest extends TestCase
 {
@@ -84,5 +85,28 @@ class FunctionsTest extends TestCase
 
         $this->expectException(InitialStateRequired::class);
         getInitialState($graph);
+    }
+
+    public function testGetAttribute(): void
+    {
+        $mock = $this->createMock(AttributeAware::class);
+        $mock->method('getAttributes')->willReturn([
+            'a' => 1,
+        ]);
+
+        $this->assertSame(1, getAttribute($mock, 'a'));
+        $this->assertNull(getAttribute($mock, 'b'));
+        $this->assertSame(2, getAttribute($mock, 'b', 2));
+    }
+
+    public function testHasAttribute(): void
+    {
+        $mock = $this->createMock(AttributeAware::class);
+        $mock->method('getAttributes')->willReturn([
+            'a' => 1,
+        ]);
+
+        $this->assertTrue(hasAttribute($mock, 'a'));
+        $this->assertFalse(hasAttribute($mock, 'b'));
     }
 }

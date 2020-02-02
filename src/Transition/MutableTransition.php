@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Transition;
 
 use IronBound\State\State\StateId;
+use function IronBound\State\castArray;
 
 final class MutableTransition implements Transition
 {
@@ -29,6 +30,9 @@ final class MutableTransition implements Transition
     /** @var Guard|null */
     private $guard;
 
+    /** @var array */
+    private $attributes;
+
     /**
      * MutableTransition constructor.
      *
@@ -36,12 +40,19 @@ final class MutableTransition implements Transition
      * @param StateId[]    $initialStates
      * @param StateId      $finalState
      * @param Guard|null   $guard
+     * @param iterable     $attributes
      */
-    public function __construct(TransitionId $id, iterable $initialStates, StateId $finalState, Guard $guard = null)
-    {
+    public function __construct(
+        TransitionId $id,
+        iterable $initialStates,
+        StateId $finalState,
+        Guard $guard = null,
+        iterable $attributes = []
+    ) {
         $this->id         = $id;
         $this->finalState = $finalState;
         $this->guard      = $guard;
+        $this->attributes = castArray($attributes);
 
         \IronBound\State\each($initialStates, [ $this, 'addInitialState' ]);
     }
@@ -97,5 +108,25 @@ final class MutableTransition implements Transition
     public function getGuard(): ?Guard
     {
         return $this->guard;
+    }
+
+    /**
+     * Set an attribute's value.
+     *
+     * @param string $attribute
+     * @param mixed  $value
+     *
+     * @return $this
+     */
+    public function setAttribute(string $attribute, $value): self
+    {
+        $this->attributes[ $attribute ] = $value;
+
+        return $this;
+    }
+
+    public function getAttributes(): iterable
+    {
+        return $this->attributes;
     }
 }

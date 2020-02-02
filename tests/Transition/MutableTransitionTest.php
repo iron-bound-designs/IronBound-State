@@ -17,6 +17,8 @@ use IronBound\State\State\StateId;
 use IronBound\State\Transition\{Guard, MutableTransition, TransitionId};
 use PHPUnit\Framework\TestCase;
 
+use function IronBound\State\getAttribute;
+use function IronBound\State\hasAttribute;
 use function IronBound\State\mapMethod;
 
 class MutableTransitionTest extends TestCase
@@ -81,6 +83,21 @@ class MutableTransitionTest extends TestCase
         $this->assertSame($guard, $transition->getGuard());
     }
 
+    public function testGetAttributes(): void
+    {
+        $transition = $this->makeTransition();
+        $this->assertTrue(hasAttribute($transition, 'label'));
+        $this->assertEquals('Activate', getAttribute($transition, 'label'));
+    }
+
+    public function testSetAttribute(): void
+    {
+        $transition = $this->makeTransition();
+        $transition->setAttribute('description', 'Activate the object.');
+        $this->assertTrue(hasAttribute($transition, 'description'));
+        $this->assertEquals('Activate the object.', getAttribute($transition, 'description'));
+    }
+
     private function makeTransition(): MutableTransition
     {
         return new MutableTransition(
@@ -88,7 +105,9 @@ class MutableTransitionTest extends TestCase
             [
                 new StateId('pending'),
             ],
-            new StateId('active')
+            new StateId('active'),
+            null,
+            [ 'label' => 'Activate' ]
         );
     }
 }

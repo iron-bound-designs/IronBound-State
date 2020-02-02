@@ -16,6 +16,7 @@ namespace IronBound\State\State;
 use IronBound\State\Exception\CannotAddTransitionToFinalState;
 use IronBound\State\Transition\TransitionId;
 
+use function IronBound\State\castArray;
 use function IronBound\State\uniqueBy;
 
 final class ImmutableState implements State
@@ -29,17 +30,22 @@ final class ImmutableState implements State
     /** @var TransitionId[] */
     private $transitions;
 
+    /** @var array */
+    private $attributes;
+
     /**
      * ImmutableState constructor.
      *
      * @param StateId        $id
      * @param StateType      $type
      * @param TransitionId[] $transitions
+     * @param iterable       $attributes
      */
-    public function __construct(StateId $id, StateType $type, iterable $transitions = [])
+    public function __construct(StateId $id, StateType $type, iterable $transitions = [], iterable $attributes = [])
     {
         $this->id          = $id;
         $this->type        = $type;
+        $this->attributes  = castArray($attributes);
         $this->transitions = uniqueBy($transitions, static function (TransitionId $id) {
             return $id->getName();
         });
@@ -65,5 +71,10 @@ final class ImmutableState implements State
     public function getTransitions(): iterable
     {
         return $this->transitions;
+    }
+
+    public function getAttributes(): iterable
+    {
+        return $this->attributes;
     }
 }

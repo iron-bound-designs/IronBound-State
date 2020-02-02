@@ -15,6 +15,7 @@ namespace IronBound\State\Transition;
 
 use IronBound\State\State\StateId;
 
+use function IronBound\State\castArray;
 use function IronBound\State\uniqueBy;
 
 final class ImmutableTransition implements Transition
@@ -31,6 +32,9 @@ final class ImmutableTransition implements Transition
     /** @var Guard|null */
     private $guard;
 
+    /** @var array */
+    private $attributes;
+
     /**
      * ImmutableTransition constructor.
      *
@@ -38,12 +42,19 @@ final class ImmutableTransition implements Transition
      * @param StateId[]    $initialStates
      * @param StateId      $finalState
      * @param Guard|null   $guard
+     * @param iterable     $attributes
      */
-    public function __construct(TransitionId $id, iterable $initialStates, StateId $finalState, Guard $guard = null)
-    {
+    public function __construct(
+        TransitionId $id,
+        iterable $initialStates,
+        StateId $finalState,
+        Guard $guard = null,
+        iterable $attributes = []
+    ) {
         $this->id            = $id;
         $this->finalState    = $finalState;
         $this->guard         = $guard;
+        $this->attributes    = castArray($attributes);
         $this->initialStates = uniqueBy($initialStates, static function (StateId $id) {
             return $id->getName();
         });
@@ -70,5 +81,10 @@ final class ImmutableTransition implements Transition
     public function getGuard(): ?Guard
     {
         return $this->guard;
+    }
+
+    public function getAttributes(): iterable
+    {
+        return $this->attributes;
     }
 }
