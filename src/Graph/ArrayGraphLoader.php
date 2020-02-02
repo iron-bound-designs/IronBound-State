@@ -58,7 +58,7 @@ final class ArrayGraphLoader implements GraphLoader
             }
 
             $type  = $config['type'] ?? StateType::NORMAL;
-            $state = new MutableState(new StateId($name), new StateType($type));
+            $state = new MutableState(new StateId($name), new StateType($type), [], $config['attributes'] ?? []);
 
             $states[ $name ] = $state;
             $mutable->addState($state);
@@ -77,7 +77,8 @@ final class ArrayGraphLoader implements GraphLoader
                     return new StateId($name);
                 }),
                 new StateId($config['to']),
-                $guard
+                $guard,
+                $config['attributes'] ?? []
             );
 
             $mutable->addTransition($transition);

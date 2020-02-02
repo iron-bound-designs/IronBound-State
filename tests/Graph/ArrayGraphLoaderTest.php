@@ -24,6 +24,7 @@ use IronBound\State\Transition\TransitionId;
 use PHPUnit\Framework\TestCase;
 
 use function IronBound\State\containsTransitionId;
+use function IronBound\State\getAttribute;
 use function IronBound\State\mapMethod;
 
 class ArrayGraphLoaderTest extends TestCase
@@ -35,7 +36,10 @@ class ArrayGraphLoaderTest extends TestCase
         $loader  = new ArrayGraphLoader($graphId, [
             'states'      => [
                 'pending'  => [
-                    'type' => StateType::INITIAL,
+                    'type'       => StateType::INITIAL,
+                    'attributes' => [
+                        'label' => 'Pending',
+                    ],
                 ],
                 'active',
                 'inactive' => [],
@@ -46,12 +50,15 @@ class ArrayGraphLoaderTest extends TestCase
                     'to'    => 'active',
                     'guard' => static function () {
                         return Evaluation::invalid('Error');
-                    }
+                    },
                 ],
                 'deactivate' => [
-                    'from'  => 'active',
-                    'to'    => 'inactive',
-                    'guard' => $guard,
+                    'from'       => 'active',
+                    'to'         => 'inactive',
+                    'guard'      => $guard,
+                    'attributes' => [
+                        'label' => 'Deactivate',
+                    ],
                 ],
             ]
         ]);
@@ -70,6 +77,7 @@ class ArrayGraphLoaderTest extends TestCase
             new TransitionId('deactivate'),
             ...$pending->getTransitions()
         ));
+        $this->assertEquals('Pending', getAttribute($pending, 'label'));
 
         $active = $graph->getStates()->get(new StateId('active'));
         $this->assertEquals(StateType::NORMAL, $active->getType()->getValue());
@@ -102,6 +110,7 @@ class ArrayGraphLoaderTest extends TestCase
         $this->assertEquals([ 'active' ], mapMethod($deactivate->getInitialStates(), 'getName'));
         $this->assertEquals('inactive', $deactivate->getFinalState()->getName());
         $this->assertSame($guard, $deactivate->getGuard());
+        $this->assertEquals('Deactivate', getAttribute($deactivate, 'label'));
     }
 
     public function testSupports(): void

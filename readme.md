@@ -117,6 +117,10 @@ $config = [
                     'paid',
                     'refunded' => [
                         'type' => StateType::FINAL,
+                        // Custom defined attributes.
+                        'attributes' => [
+                            'label' => 'Refunded',
+                        ],
                     ],
                 ],
                 // The list of all the available transitions
@@ -126,6 +130,10 @@ $config = [
                         'from' => 'unpaid',
                         // The state the subject will be in after transitioning. 
                         'to'   => 'processing',
+                        // Custom defined attributes.
+                        'attributes' => [
+                            'label' => 'Pay',
+                        ],
                     ],
                     'complete' => [
                         'from' => 'processing',
