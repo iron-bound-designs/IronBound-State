@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Tests\Factory;
 
 use IronBound\State\Exception\InvalidArgumentException;
-use IronBound\State\Factory\ConcreteStateMachineFactory;
+use IronBound\State\Factory\ClassSupportsTest;
 use IronBound\State\Factory\StateMachineFactoryConfigurator;
 use IronBound\State\Graph\GraphId;
 use IronBound\State\State\StateType;
@@ -169,7 +169,7 @@ class StateMachineFactoryConfiguratorTest extends TestCase
         $configurator = new StateMachineFactoryConfigurator();
         $factory      = $configurator->configure([
             [
-                'test'   => ConcreteStateMachineFactory::classTest('stdClass'),
+                'test'   => new ClassSupportsTest('stdClass'),
                 'graphs' => [
                     'status' => [
                         'mediator'    => [

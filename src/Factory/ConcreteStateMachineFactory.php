@@ -62,29 +62,4 @@ final class ConcreteStateMachineFactory implements StateMachineFactory
 
         return $callback($subject);
     }
-
-    /**
-     * Returns a support test for choosing a factory based on the subject's class.
-     *
-     * @param string $class
-     *
-     * @return SupportsTest
-     */
-    public static function classTest(string $class): SupportsTest
-    {
-        return new class ($class) implements SupportsTest {
-            /** @var string */
-            private $class;
-
-            public function __construct(string $class)
-            {
-                $this->class = $class;
-            }
-
-            public function __invoke(object $subject): bool
-            {
-                return $subject instanceof $this->class;
-            }
-        };
-    }
 }

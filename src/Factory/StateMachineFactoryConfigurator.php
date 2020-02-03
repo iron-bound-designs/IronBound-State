@@ -15,10 +15,11 @@ namespace IronBound\State\Factory;
 
 use IronBound\State\Graph\{ArrayGraphLoader, CachedGraphLoader, ChainGraphLoader, GraphId};
 use IronBound\State\Exception\InvalidArgumentException;
-use IronBound\State\StateMediator\{MethodStateMediator,
-    PredefinedStateMediatorFactory,
+use IronBound\State\StateMediator\{
+    StateMediator,
+    MethodStateMediator,
     PropertyStateMediator,
-    StateMediator
+    PredefinedStateMediatorFactory,
 };
 
 use function IronBound\State\arrayPick;
@@ -45,7 +46,7 @@ final class StateMachineFactoryConfigurator
             if ($subject['test'] instanceof SupportsTest) {
                 $test = $subject['test'];
             } elseif (isset($subject['test']['class'])) {
-                $test = ConcreteStateMachineFactory::classTest($subject['test']['class']);
+                $test = new ClassSupportsTest($subject['test']['class']);
             } else {
                 throw new InvalidArgumentException('Config is missing a valid support test.');
             }

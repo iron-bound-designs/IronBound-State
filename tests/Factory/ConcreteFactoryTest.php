@@ -72,16 +72,4 @@ class ConcreteFactoryTest extends TestCase
         );
         $this->assertFalse($factory->supports($subject));
     }
-
-    public function testClassTest(): void
-    {
-        $test = ConcreteStateMachineFactory::classTest('stdClass');
-        $this->assertTrue($test(new \stdClass()));
-        $this->assertTrue($test(new class extends \stdClass {
-        }));
-
-        $this->assertFalse($test(new GraphId('default')));
-        $this->assertFalse($test(new class {
-        }));
-    }
 }
