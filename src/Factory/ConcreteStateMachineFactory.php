@@ -18,6 +18,7 @@ use IronBound\State\ConcreteStateMachine;
 use IronBound\State\Exception\UnsupportedSubject;
 use IronBound\State\StateMachine;
 use IronBound\State\StateMediator\StateMediatorFactory;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class ConcreteStateMachineFactory implements StateMachineFactory
 {
@@ -29,6 +30,9 @@ final class ConcreteStateMachineFactory implements StateMachineFactory
 
     /** @var SupportsTest */
     private $test;
+
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
 
     /**
      * Factory constructor.
@@ -52,8 +56,13 @@ final class ConcreteStateMachineFactory implements StateMachineFactory
 
         $mediator = $this->mediatorFactory->make($graphId);
         $graph    = $this->loader->make($graphId);
+        $machine  = new ConcreteStateMachine($mediator, $graph, $subject);
 
-        return new ConcreteStateMachine($mediator, $graph, $subject);
+        if ($this->eventDispatcher) {
+            $machine->setEventDispatcher($this->eventDispatcher);
+        }
+
+        return $machine;
     }
 
     public function supports(object $subject): bool
@@ -61,5 +70,15 @@ final class ConcreteStateMachineFactory implements StateMachineFactory
         $callback = $this->test;
 
         return $callback($subject);
+    }
+
+    /**
+     * Set the event dispatcher to use and provide to State Machines.
+     *
+     * @param EventDispatcherInterface|null $eventDispatcher
+     */
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 }

@@ -52,16 +52,6 @@ final class ConcreteStateMachine implements StateMachine
         $this->subject  = $subject;
     }
 
-    /**
-     * Set the Event Dispatcher for the State Machine to dispatch events through.
-     *
-     * @param EventDispatcherInterface $eventDispatcher
-     */
-    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): void
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
     public function getSubject(): object
     {
         return $this->subject;
@@ -152,5 +142,25 @@ final class ConcreteStateMachine implements StateMachine
                 yield $transition;
             }
         }
+    }
+
+    /**
+     * Get the event dispatcher instance the State Machine is using.
+     *
+     * @return EventDispatcherInterface|null
+     */
+    public function getEventDispatcher(): ?EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * Set the Event Dispatcher for the State Machine to dispatch events through.
+     *
+     * @param EventDispatcherInterface $eventDispatcher
+     */
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 }

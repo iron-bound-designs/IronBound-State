@@ -16,6 +16,7 @@ namespace IronBound\State\Tests\Factory;
 use IronBound\State\Exception\UnsupportedSubject;
 use IronBound\State\Factory\{ConcreteStateMachineFactory, SupportsTest};
 use IronBound\State\Graph\{Graph, GraphId, GraphLoader};
+use Psr\EventDispatcher\EventDispatcherInterface;
 use IronBound\State\StateMediator\{StateMediator, StateMediatorFactory};
 use PHPUnit\Framework\TestCase;
 
@@ -71,5 +72,29 @@ class ConcreteFactoryTest extends TestCase
             $supportsTest
         );
         $this->assertFalse($factory->supports($subject));
+    }
+
+    public function testSetsEventDispatcher(): void
+    {
+        $subject    = new \stdClass();
+        $graphId    = new GraphId('default');
+        $mediator   = $this->createMock(StateMediator::class);
+        $graph      = $this->createMock(Graph::class);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $mediatorFactory = $this->createMock(StateMediatorFactory::class);
+        $mediatorFactory->expects($this->once())->method('make')->with($graphId)->willReturn($mediator);
+
+        $loader = $this->createMock(GraphLoader::class);
+        $loader->expects($this->once())->method('make')->with($graphId)->willReturn($graph);
+
+        $supportsTest = $this->createMock(SupportsTest::class);
+        $supportsTest->method('__invoke')->willReturn(true);
+
+        $factory = new ConcreteStateMachineFactory($mediatorFactory, $loader, $supportsTest);
+        $factory->setEventDispatcher($dispatcher);
+
+        $stateMachine = $factory->make($subject, $graphId);
+        $this->assertSame($dispatcher, $stateMachine->getEventDispatcher());
     }
 }

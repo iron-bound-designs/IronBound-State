@@ -15,6 +15,7 @@ namespace IronBound\State\Factory;
 
 use IronBound\State\Graph\{ArrayGraphLoader, CachedGraphLoader, ChainGraphLoader, GraphId};
 use IronBound\State\Exception\InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use IronBound\State\StateMediator\{
     StateMediator,
     MethodStateMediator,
@@ -26,6 +27,19 @@ use function IronBound\State\arrayPick;
 
 final class StateMachineFactoryConfigurator
 {
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
+    /**
+     * Set the event dispatcher to use and provide to State Machines.
+     *
+     * @param EventDispatcherInterface|null $eventDispatcher
+     */
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
     /**
      * Configure a state machine factory based on an array config.
      *
@@ -77,11 +91,17 @@ final class StateMachineFactoryConfigurator
                 ));
             }
 
-            $chain->addFactory(new ConcreteStateMachineFactory(
+            $stateMachineFactory = new ConcreteStateMachineFactory(
                 $mediatorFactory,
                 new CachedGraphLoader($graphLoader),
                 $test
-            ));
+            );
+
+            if ($this->eventDispatcher) {
+                $stateMachineFactory->setEventDispatcher($this->eventDispatcher);
+            }
+
+            $chain->addFactory($stateMachineFactory);
         }
 
         return $chain;

@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace IronBound\State\Tests\Factory;
 
 use IronBound\State\Exception\InvalidArgumentException;
-use IronBound\State\Factory\ClassSupportsTest;
-use IronBound\State\Factory\StateMachineFactoryConfigurator;
+use IronBound\State\Factory\{ClassSupportsTest, StateMachineFactoryConfigurator};
 use IronBound\State\Graph\GraphId;
 use IronBound\State\State\StateType;
 use IronBound\State\StateMediator\PropertyStateMediator;
 use IronBound\State\Transition\TransitionId;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use PHPUnit\Framework\TestCase;
 
 use function IronBound\State\mapMethod;
@@ -294,5 +294,42 @@ class StateMachineFactoryConfiguratorTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    public function testConfigureWithEventDispatcher(): void
+    {
+        $dispatcher   = $this->createMock(EventDispatcherInterface::class);
+        $configurator = new StateMachineFactoryConfigurator();
+        $configurator->setEventDispatcher($dispatcher);
+
+        $factory = $configurator->configure([
+            [
+                'test'   => [
+                    'class' => 'stdClass',
+                ],
+                'graphs' => [
+                    'status' => [
+                        'mediator'    => new PropertyStateMediator('status'),
+                        'states'      => [
+                            'pending' => [
+                                'type' => StateType::INITIAL,
+                            ],
+                            'active'  => [],
+                        ],
+                        'transitions' => [
+                            'activate' => [
+                                'from' => 'pending',
+                                'to'   => 'active',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $subject      = new \stdClass();
+        $stateMachine = $factory->make($subject, new GraphId('status'));
+
+        $this->assertSame($dispatcher, $stateMachine->getEventDispatcher());
     }
 }
