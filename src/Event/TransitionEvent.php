@@ -24,16 +24,21 @@ class TransitionEvent implements Event
     /** @var Transition */
     private $transition;
 
+    /** @var array */
+    private $parameters;
+
     /**
      * TransitionEvent constructor.
      *
      * @param StateMachine $machine
      * @param Transition   $transition
+     * @param array        $parameters
      */
-    public function __construct(StateMachine $machine, Transition $transition)
+    public function __construct(StateMachine $machine, Transition $transition, array $parameters)
     {
         $this->machine    = $machine;
         $this->transition = $transition;
+        $this->parameters = $parameters;
     }
 
     /**
@@ -54,5 +59,15 @@ class TransitionEvent implements Event
     public function getTransition(): Transition
     {
         return $this->transition;
+    }
+
+    /**
+     * Get the parameters provided to the State Machine.
+     *
+     * @return array
+     */
+    public function getParameters(): array
+    {
+        return $this->parameters;
     }
 }

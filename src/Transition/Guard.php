@@ -27,8 +27,9 @@ interface Guard
      *                                 gain access to the subject and current state.
      * @param Transition   $transition The transition being applied. Provided in case the
      *                                 guard cannot maintain a reference to it's transition.
+     * @param array        $parameters Additional parameters to customize behavior.
      *
      * @return Evaluation The evaluation result.
      */
-    public function __invoke(StateMachine $machine, Transition $transition): Evaluation;
+    public function __invoke(StateMachine $machine, Transition $transition, array $parameters): Evaluation;
 }

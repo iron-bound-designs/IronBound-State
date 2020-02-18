@@ -1,6 +1,7 @@
 <?php
+
 /**
- * todo: File Description
+ * Test the callable guard.
  *
  * @author      Iron Bound Designs
  * @since       1.0
@@ -24,16 +25,26 @@ class CallableGuardTest extends TestCase
     {
         $expectedMachine    = $this->createMock(StateMachine::class);
         $expectedTransition = $this->createMock(Transition::class);
+        $expectedParameters = [ 'a' => 1 ];
 
         $guard = new CallableGuard(
-            function (StateMachine $machine, Transition $transition) use ($expectedMachine, $expectedTransition) {
+            function (
+                StateMachine $machine,
+                Transition $transition,
+                array $parameters
+            ) use (
+                $expectedMachine,
+                $expectedTransition,
+                $expectedParameters
+            ) {
                 $this->assertSame($expectedMachine, $machine);
                 $this->assertSame($expectedTransition, $transition);
+                $this->assertSame($expectedParameters, $parameters);
 
                 return Evaluation::valid();
             }
         );
 
-        $guard($expectedMachine, $expectedTransition);
+        $guard($expectedMachine, $expectedTransition, $expectedParameters);
     }
 }

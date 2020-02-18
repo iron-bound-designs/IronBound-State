@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace IronBound\State\Transition;
 
 use IronBound\State\State\StateId;
+
 use function IronBound\State\castArray;
 
 final class MutableTransition implements Transition

@@ -13,15 +13,12 @@ declare(strict_types=1);
 
 namespace IronBound\State;
 
-use IronBound\State\Event\AfterTransitionEvent;
-use IronBound\State\Event\BeforeTransitionEvent;
-use IronBound\State\Event\TestTransitionEvent;
+use IronBound\State\Event\{AfterTransitionEvent, BeforeTransitionEvent, TestTransitionEvent};
 use IronBound\State\Exception\CannotTransition;
 use IronBound\State\Graph\Graph;
-use IronBound\State\State\State;
-use IronBound\State\Transition\{Evaluation, TransitionId};
-use IronBound\State\State\StateType;
+use IronBound\State\State\{State, StateType};
 use IronBound\State\StateMediator\StateMediator;
+use IronBound\State\Transition\{Evaluation, TransitionId};
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class ConcreteStateMachine implements StateMachine
@@ -73,9 +70,9 @@ final class ConcreteStateMachine implements StateMachine
         return getInitialState($this->getGraph());
     }
 
-    public function apply(TransitionId $transitionId): void
+    public function apply(TransitionId $transitionId, array $parameters = []): void
     {
-        $evaluation = $this->evaluate($transitionId);
+        $evaluation = $this->evaluate($transitionId, $parameters);
 
         if (! $evaluation->isValid()) {
             throw CannotTransition::create($evaluation, $transitionId);
@@ -84,17 +81,17 @@ final class ConcreteStateMachine implements StateMachine
         $transition = $this->getGraph()->getTransitions()->get($transitionId);
 
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(new BeforeTransitionEvent($this, $transition));
+            $this->eventDispatcher->dispatch(new BeforeTransitionEvent($this, $transition, $parameters));
         }
 
         $this->mediator->setState($this->getSubject(), $transition->getFinalState());
 
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(new AfterTransitionEvent($this, $transition));
+            $this->eventDispatcher->dispatch(new AfterTransitionEvent($this, $transition, $parameters));
         }
     }
 
-    public function evaluate(TransitionId $transitionId): Evaluation
+    public function evaluate(TransitionId $transitionId, array $parameters = []): Evaluation
     {
         $transition = $this->getGraph()->getTransitions()->get($transitionId);
 
@@ -113,7 +110,7 @@ final class ConcreteStateMachine implements StateMachine
         }
 
         if ($guard = $transition->getGuard()) {
-            $evaluation = $guard($this, $transition);
+            $evaluation = $guard($this, $transition, $parameters);
 
             if ($evaluation->isInvalid()) {
                 return $evaluation;
@@ -121,7 +118,7 @@ final class ConcreteStateMachine implements StateMachine
         }
 
         if ($this->eventDispatcher) {
-            $event = $this->eventDispatcher->dispatch(new TestTransitionEvent($this, $transition));
+            $event = $this->eventDispatcher->dispatch(new TestTransitionEvent($this, $transition, $parameters));
 
             if ($reasons = $event->getRejectionReasons()) {
                 return Evaluation::invalid(...$reasons);

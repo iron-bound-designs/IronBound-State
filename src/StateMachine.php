@@ -45,20 +45,20 @@ interface StateMachine
     /**
      * Apply a transition.
      *
-     * @param TransitionId $transitionId
-     *
-     * @throws CannotTransition
+     * @param TransitionId $transitionId The transition to apply.
+     * @param array        $parameters   Parameters to customize behavior or provide additional context.
      */
-    public function apply(TransitionId $transitionId): void;
+    public function apply(TransitionId $transitionId, array $parameters = []): void;
 
     /**
      * Evaluate a transition.
      *
-     * @param TransitionId $transitionId
+     * @param TransitionId $transitionId The transition to apply.
+     * @param array        $parameters   Parameters to customize behavior or provide additional context.
      *
      * @return Evaluation
      */
-    public function evaluate(TransitionId $transitionId): Evaluation;
+    public function evaluate(TransitionId $transitionId, array $parameters = []): Evaluation;
 
     /**
      * Get a list of the available transitions to the subject.

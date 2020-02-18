@@ -30,10 +30,10 @@ final class CallableGuard implements Guard
         $this->callable = $callable;
     }
 
-    public function __invoke(StateMachine $machine, Transition $transition): Evaluation
+    public function __invoke(StateMachine $machine, Transition $transition, array $parameters): Evaluation
     {
         $cb = $this->callable;
 
-        return $cb($machine, $transition);
+        return $cb($machine, $transition, $parameters);
     }
 }

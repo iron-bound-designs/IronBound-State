@@ -121,7 +121,8 @@ class ConcreteStateMachineTest extends TestCase
 
     public function testEvaluateCallsGuard(): void
     {
-        $guard = $this->createMock(Guard::class);
+        $parameters = [ 'a' => 1 ];
+        $guard      = $this->createMock(Guard::class);
         $guard->expects($this->once())
             ->method('__invoke')
             ->with(
@@ -130,7 +131,8 @@ class ConcreteStateMachineTest extends TestCase
                 }),
                 $this->callback(static function (Transition $actual) use (&$transition) {
                     return $actual === $transition;
-                })
+                }),
+                $parameters
             )
             ->willReturn(Evaluation::invalid('Error'));
 
@@ -146,26 +148,27 @@ class ConcreteStateMachineTest extends TestCase
         );
         $machine = new ConcreteStateMachine($this->getMediator(), $graph, $this->getSubject());
 
-        $evaluation = $machine->evaluate(self::$activate);
+        $evaluation = $machine->evaluate(self::$activate, $parameters);
         $this->assertTrue($evaluation->isInvalid());
         $this->assertEquals([ 'Error' ], $evaluation->getReasons());
     }
 
     public function testEvaluateDispatchesEventAndMarksEvaluationAsInvalidIfRejected(): void
     {
+        $parameters = [ 'a' => 1 ];
         $machine    = new ConcreteStateMachine($this->getMediator(), $this->getGraph(), $this->getSubject());
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(static function (TestTransitionEvent $event) {
+            ->with($this->callback(static function (TestTransitionEvent $event) use ($parameters) {
                 $event->reject('Error');
 
-                return true;
+                return $parameters === $event->getParameters();
             }))
             ->willReturnArgument(0);
 
         $machine->setEventDispatcher($dispatcher);
-        $evaluation = $machine->evaluate(self::$activate);
+        $evaluation = $machine->evaluate(self::$activate, $parameters);
 
         $this->assertTrue($evaluation->isInvalid());
         $this->assertEquals([ 'Error' ], $evaluation->getReasons());

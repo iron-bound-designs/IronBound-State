@@ -104,7 +104,7 @@ class ArrayGraphLoaderTest extends TestCase
         $activate = $graph->getTransitions()->get(new TransitionId('activate'));
         $this->assertEquals([ 'pending', 'inactive' ], mapMethod($activate->getInitialStates(), 'getName'));
         $this->assertEquals('active', $activate->getFinalState()->getName());
-        $this->assertTrue(($activate->getGuard()($this->createMock(StateMachine::class), $activate))->isInvalid());
+        $this->assertTrue(($activate->getGuard()($this->createMock(StateMachine::class), $activate, []))->isInvalid());
 
         $deactivate = $graph->getTransitions()->get(new TransitionId('deactivate'));
         $this->assertEquals([ 'active' ], mapMethod($deactivate->getInitialStates(), 'getName'));
